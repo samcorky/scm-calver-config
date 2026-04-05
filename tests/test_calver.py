@@ -1,0 +1,335 @@
+"""Tests for scm_calver_config."""
+
+from __future__ import annotations
+
+import datetime
+from pathlib import Path
+from unittest.mock import MagicMock, patch
+
+import pytest
+
+from scm_calver_config import (
+    CalverConfig,
+    _base,
+    _is_same_period,
+    _load_calver_config,
+    _parse_tag,
+    calver_local,
+    calver_scm,
+)
+
+TODAY = datetime.date(2026, 4, 15)
+JANUARY = datetime.date(2026, 1, 5)
+
+
+def make_version(
+        tag: str | None = None,
+        distance: int = 0,
+        dirty: bool = False,
+        root: str = ".",
+) -> MagicMock:
+    """Create a mock ScmVersion."""
+    version = MagicMock()
+    version.tag = tag
+    version.distance = distance
+    version.dirty = dirty
+    version.config.root = root
+    return version
+
+
+def make_config(**kwargs: object) -> CalverConfig:
+    """Create a CalverConfig with optional overrides."""
+    return CalverConfig(**kwargs)
+
+
+@pytest.fixture
+def freeze_april() -> object:
+    """Freeze date to 2026-04-15."""
+    with patch("scm_calver_config.datetime") as mock_dt:
+        mock_dt.date.today.return_value = TODAY
+        mock_dt.date.side_effect = lambda *a, **kw: datetime.date(*a, **kw)
+        yield mock_dt
+
+
+@pytest.fixture
+def freeze_january() -> object:
+    """Freeze date to 2026-01-05."""
+    with patch("scm_calver_config.datetime") as mock_dt:
+        mock_dt.date.today.return_value = JANUARY
+        mock_dt.date.side_effect = lambda *a, **kw: datetime.date(*a, **kw)
+        yield mock_dt
+
+
+@pytest.fixture(autouse=True)
+def clear_config_cache() -> object:
+    """Clear lru_cache between tests."""
+    _load_calver_config.cache_clear()
+    yield
+    _load_calver_config.cache_clear()
+
+
+class TestCalverConfig:
+    """CalverConfig model validation."""
+
+    def test_defaults(self) -> None:
+        cfg = CalverConfig()
+        assert cfg.mode == "month"
+        assert cfg.patch is True
+        assert cfg.fallback == "dev"
+        assert cfg.tag_prefix == "v"
+
+    def test_custom_values(self) -> None:
+        cfg = CalverConfig(mode="day", patch=False, fallback="date", tag_prefix="")
+        assert cfg.mode == "day"
+        assert cfg.patch is False
+        assert cfg.fallback == "date"
+        assert cfg.tag_prefix == ""
+
+    def test_invalid_mode(self) -> None:
+        with pytest.raises(Exception):
+            CalverConfig(mode="year")  # type: ignore[arg-type]
+
+    def test_invalid_fallback(self) -> None:
+        with pytest.raises(Exception):
+            CalverConfig(fallback="none")  # type: ignore[arg-type]
+
+
+class TestLoadCalverConfig:
+    """Config loading from pyproject.toml."""
+
+    def test_loads_from_pyproject(self, tmp_path: Path) -> None:
+        pyproject = tmp_path / "pyproject.toml"
+        pyproject.write_bytes(b"""
+[tool.calver_scm]
+mode = "day"
+patch = false
+""")
+        cfg = _load_calver_config(tmp_path)
+        assert cfg.mode == "day"
+        assert cfg.patch is False
+
+    def test_missing_pyproject_returns_defaults(self, tmp_path: Path) -> None:
+        cfg = _load_calver_config(tmp_path)
+        assert cfg == CalverConfig()
+
+    def test_missing_section_returns_defaults(self, tmp_path: Path) -> None:
+        pyproject = tmp_path / "pyproject.toml"
+        pyproject.write_bytes(b"[tool.ruff]\nfix = true\n")
+        cfg = _load_calver_config(tmp_path)
+        assert cfg == CalverConfig()
+
+    def test_invalid_toml_raises(self, tmp_path: Path) -> None:
+        pyproject = tmp_path / "pyproject.toml"
+        pyproject.write_bytes(b"not valid toml ][")
+        with pytest.raises(RuntimeError, match="Invalid pyproject.toml"):
+            _load_calver_config(tmp_path)
+
+    def test_invalid_config_raises(self, tmp_path: Path) -> None:
+        pyproject = tmp_path / "pyproject.toml"
+        pyproject.write_bytes(b'[tool.calver_scm]\nmode = "invalid"\n')
+        with pytest.raises(RuntimeError, match="Invalid \\[tool.calver_scm\\] config"):
+            _load_calver_config(tmp_path)
+
+
+class TestParseTag:
+    """Tag parsing into components."""
+
+    def test_month_mode_with_patch(self) -> None:
+        cfg = make_config()
+        assert _parse_tag("v2026.04.1", cfg) == (2026, 4, 0, 1)
+
+    def test_month_mode_without_patch(self) -> None:
+        cfg = make_config()
+        assert _parse_tag("v2026.04", cfg) == (2026, 4, 0, 0)
+
+    def test_day_mode_with_patch(self) -> None:
+        cfg = make_config(mode="day")
+        assert _parse_tag("v2026.04.15.2", cfg) == (2026, 4, 15, 2)
+
+    def test_day_mode_without_patch(self) -> None:
+        cfg = make_config(mode="day")
+        assert _parse_tag("v2026.04.15", cfg) == (2026, 4, 15, 0)
+
+    def test_no_prefix(self) -> None:
+        cfg = make_config(tag_prefix="")
+        assert _parse_tag("2026.04.0", cfg) == (2026, 4, 0, 0)
+
+    def test_malformed_returns_none(self) -> None:
+        cfg = make_config()
+        assert _parse_tag("not-a-version", cfg) is None
+
+    def test_non_numeric_returns_none(self) -> None:
+        cfg = make_config()
+        assert _parse_tag("vabc.def.ghi", cfg) is None
+
+
+class TestIsSamePeriod:
+    """Period comparison logic."""
+
+    def test_same_month(self) -> None:
+        cfg = make_config(mode="month")
+        assert _is_same_period(TODAY, 2026, 4, 0, cfg) is True
+
+    def test_different_month(self) -> None:
+        cfg = make_config(mode="month")
+        assert _is_same_period(TODAY, 2026, 3, 0, cfg) is False
+
+    def test_different_year(self) -> None:
+        cfg = make_config(mode="month")
+        assert _is_same_period(TODAY, 2025, 4, 0, cfg) is False
+
+    def test_same_day(self) -> None:
+        cfg = make_config(mode="day")
+        assert _is_same_period(TODAY, 2026, 4, 15, cfg) is True
+
+    def test_different_day(self) -> None:
+        cfg = make_config(mode="day")
+        assert _is_same_period(TODAY, 2026, 4, 14, cfg) is False
+
+
+class TestBase:
+    """Base version string generation."""
+
+    def test_month_mode(self) -> None:
+        assert _base(TODAY, make_config(mode="month")) == "2026.04"
+
+    def test_day_mode(self) -> None:
+        assert _base(TODAY, make_config(mode="day")) == "2026.04.15"
+
+    def test_single_digit_month_padded(self) -> None:
+        assert _base(JANUARY, make_config(mode="month")) == "2026.01"
+
+    def test_single_digit_day_padded(self) -> None:
+        assert _base(JANUARY, make_config(mode="day")) == "2026.01.05"
+
+
+class TestCalverScm:
+    """End-to-end version generation."""
+
+    class TestNoTag:
+        """Behaviour when no tag exists."""
+
+        def test_dev_fallback(self, freeze_april: object) -> None:
+            result = calver_scm(make_version(distance=5))
+            assert result == "2026.04.0.dev5"
+
+        def test_date_fallback(self, freeze_april: object, tmp_path: Path) -> None:
+            (tmp_path / "pyproject.toml").write_bytes(
+                b'[tool.calver_scm]\nfallback = "date"\n'
+            )
+            result = calver_scm(make_version(distance=5, root=str(tmp_path)))
+            assert result == "2026.04.0"
+
+        def test_zero_distance(self, freeze_april: object) -> None:
+            result = calver_scm(make_version())
+            assert result == "2026.04.0.dev0"
+
+    class TestCleanTag:
+        """Behaviour on a clean-tagged commit."""
+
+        def test_exact_version_returned(self, freeze_april: object) -> None:
+            result = calver_scm(make_version(tag="v2026.04.0"))
+            assert result == "2026.04.0"
+
+        def test_patch_one_returned(self, freeze_april: object) -> None:
+            result = calver_scm(make_version(tag="v2026.04.1"))
+            assert result == "2026.04.1"
+
+        def test_dirty_not_clean(self, freeze_april: object) -> None:
+            result = calver_scm(make_version(tag="v2026.04.0", dirty=True))
+            assert result != "2026.04.0"
+
+        def test_nonzero_distance_not_clean(self, freeze_april: object) -> None:
+            result = calver_scm(make_version(tag="v2026.04.0", distance=1))
+            assert result != "2026.04.0"
+
+    class TestSameMonth:
+        """Behaviour when commits exist after tag in the same month."""
+
+        def test_patch_incremented(self, freeze_april: object) -> None:
+            result = calver_scm(make_version(tag="v2026.04.0", distance=1))
+            assert result == "2026.04.1.dev1"
+
+        def test_higher_patch(self, freeze_april: object) -> None:
+            result = calver_scm(make_version(tag="v2026.04.2", distance=3))
+            assert result == "2026.04.3.dev3"
+
+        def test_patch_disabled(self, freeze_april: object, tmp_path: Path) -> None:
+            (tmp_path / "pyproject.toml").write_bytes(
+                b"[tool.calver_scm]\npatch = false\n"
+            )
+            result = calver_scm(make_version(tag="v2026.04.2", distance=3, root=str(tmp_path)))
+            assert result == "2026.04.0.dev3"
+
+    class TestNewMonth:
+        """Behaviour when month changes."""
+
+        def test_patch_resets(self, freeze_april: object) -> None:
+            result = calver_scm(make_version(tag="v2026.03.2", distance=5))
+            assert result == "2026.04.0.dev5"
+
+        def test_new_year(self, freeze_april: object) -> None:
+            result = calver_scm(make_version(tag="v2025.12.0", distance=3))
+            assert result == "2026.04.0.dev3"
+
+    class TestDayMode:
+        """Behaviour in day mode."""
+
+        def test_clean_tag(self, freeze_april: object, tmp_path: Path) -> None:
+            (tmp_path / "pyproject.toml").write_bytes(
+                b'[tool.calver_scm]\nmode = "day"\n'
+            )
+            result = calver_scm(
+                make_version(tag="v2026.04.15.0", root=str(tmp_path))
+            )
+            assert result == "2026.04.15.0"
+
+        def test_same_day_increments(self, freeze_april: object, tmp_path: Path) -> None:
+            (tmp_path / "pyproject.toml").write_bytes(
+                b'[tool.calver_scm]\nmode = "day"\n'
+            )
+            result = calver_scm(
+                make_version(tag="v2026.04.15.0", distance=2, root=str(tmp_path))
+            )
+            assert result == "2026.04.15.1.dev2"
+
+        def test_new_day_resets(self, freeze_april: object, tmp_path: Path) -> None:
+            (tmp_path / "pyproject.toml").write_bytes(
+                b'[tool.calver_scm]\nmode = "day"\n'
+            )
+            result = calver_scm(
+                make_version(tag="v2026.04.14.0", distance=2, root=str(tmp_path))
+            )
+            assert result == "2026.04.15.0.dev2"
+
+    class TestMalformedTag:
+        """Behaviour with unparseable tags."""
+
+        def test_malformed_falls_back(self, freeze_april: object) -> None:
+            result = calver_scm(make_version(tag="not-a-version", distance=3))
+            assert result == "2026.04.0.dev3"
+
+        def test_incomplete_tag_falls_back(self, freeze_april: object) -> None:
+            result = calver_scm(make_version(tag="v2026", distance=2))
+            assert result == "2026.04.0.dev2"
+
+    class TestMonthPadding:
+        """Ensure the month is always zero-padded."""
+
+        def test_single_digit_month(self, freeze_january: object) -> None:
+            result = calver_scm(make_version(distance=1))
+            assert result == "2026.01.0.dev1"
+
+        def test_double_digit_month(self, freeze_april: object) -> None:
+            result = calver_scm(make_version(distance=1))
+            assert result == "2026.04.0.dev1"
+
+
+class TestCalverLocal:
+    """Local version scheme."""
+
+    def test_dirty(self) -> None:
+        assert calver_local(make_version(dirty=True)) == ".dirty"
+
+    def test_clean(self) -> None:
+        assert calver_local(make_version()) == ""
