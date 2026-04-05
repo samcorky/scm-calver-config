@@ -1,0 +1,22 @@
+[project]
+name = "scm-calver-config"
+version = "1.0.0-alpha"
+description = "Configurable CalVer versioning plugin for setuptools-scm"
+requires-python = ">=3.9"
+dependencies = [
+    "pydantic>=2.12.5",
+    "setuptools-scm>=9.2.2",
+]
+
+[build-system]
+requires = ["hatchling>=1.27.0"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/scm_calver"]
+
+[project.entry-points."setuptools_scm.version_scheme"]
+calver_scm = "scm_calver:calver_scm"
+
+[project.entry-points."setuptools_scm.local_scheme"]
+calver_local = "scm_calver:calver_local"
