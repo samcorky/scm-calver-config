@@ -1,0 +1,37 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended"
+  ],
+  "enabledManagers": ["pep621", "pre-commit", "github-actions"],
+  "pep621": {
+    "rangeStrategy": "bump"
+  },
+  "packageRules": [
+    {
+      "matchDepTypes": ["dependency-groups"],
+      "groupName": "dev dependencies",
+      "automerge": true,
+      "automergeType": "pr",
+      "matchUpdateTypes": ["minor", "patch"]
+    },
+    {
+      "matchDepTypes": ["project.dependencies", "build-system.requires"],
+      "groupName": "runtime dependencies"
+    },
+    {
+      "matchManagers": ["pre-commit"],
+      "groupName": "pre-commit hooks",
+      "automerge": true,
+      "automergeType": "pr",
+      "matchUpdateTypes": ["minor", "patch"]
+    },
+    {
+      "matchManagers": ["github-actions"],
+      "groupName": "github actions",
+      "automerge": true,
+      "automergeType": "pr",
+      "matchUpdateTypes": ["minor", "patch"]
+    }
+  ]
+}
