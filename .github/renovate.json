@@ -32,31 +32,49 @@
       "matchDepTypes": ["project.dependencies", "build-system.requires"],
       "matchUpdateTypes": ["minor", "patch"],
       "groupName": "runtime dependencies",
-      "groupSlug": "weekly-runtime"
+      "groupSlug": "weekly-runtime",
+      "rangeStrategy": "widen",
+      "commitMessageAction": "chore",
+      "commitMessageSubject": "runtime deps: weekly update",
+      "commitMessageExtra": "Update {{depName}} to {{newVersion}}"
     },
     {
       "matchManagers": ["pep621"],
       "matchDepTypes": ["dependency-groups"],
       "matchUpdateTypes": ["minor", "patch"],
       "groupName": "dev dependencies",
-      "groupSlug": "weekly-dev"
+      "groupSlug": "weekly-dev",
+      "rangeStrategy": "widen",
+      "commitMessageAction": "chore",
+      "commitMessageSubject": "dev deps: weekly update",
+      "commitMessageExtra": "Update {{depName}} to {{newVersion}}"
     },
     {
       "matchManagers": ["pre-commit"],
       "matchUpdateTypes": ["minor", "patch"],
       "groupName": "pre-commit hooks",
-      "groupSlug": "weekly-precommit"
+      "groupSlug": "weekly-precommit",
+      "commitMessageAction": "chore",
+      "commitMessageSubject": "pre-commit hooks: weekly update",
+      "commitMessageExtra": "Update {{depName}} to {{newVersion}}"
     },
     {
       "matchManagers": ["github-actions"],
       "matchUpdateTypes": ["minor", "patch"],
       "groupName": "GitHub Actions",
-      "groupSlug": "weekly-gh-actions"
+      "groupSlug": "weekly-gh-actions",
+      "commitMessageAction": "chore",
+      "commitMessageSubject": "GitHub Actions: weekly update",
+      "commitMessageExtra": "Update {{depName}} to {{newVersion}}"
     },
     {
       "matchUpdateTypes": ["lockFileMaintenance"],
       "groupName": "lockfile maintenance",
-      "groupSlug": "weekly-lockfiles"
+      "groupSlug": "weekly-lockfiles",
+      "commitMessageAction": "chore",
+      "commitMessageSubject": "lockfiles: weekly maintenance",
+      "automerge": true,
+      "automergeType": "branch"
     }
   ]
 }
