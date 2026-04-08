@@ -30,33 +30,62 @@
     {
       "matchManagers": ["pep621"],
       "matchDepTypes": ["project.dependencies", "build-system.requires"],
+      "rangeStrategy": "widen"
+    },
+    {
+      "matchManagers": ["pep621"],
+      "matchDepTypes": ["dependency-groups"],
+      "rangeStrategy": "widen"
+    },
+    {
+      "matchManagers": ["pep621"],
+      "matchDepTypes": ["project.dependencies", "build-system.requires"],
       "matchUpdateTypes": ["minor", "patch"],
       "groupName": "runtime dependencies",
-      "groupSlug": "weekly-runtime"
+      "commitMessageAction": "Update",
+      "commitMessageTopic": "runtime deps",
+      "commitMessageExtra": "{{depName}} to {{newVersion}}",
+      "automerge": true,
+      "automergeType": "pr"
     },
     {
       "matchManagers": ["pep621"],
       "matchDepTypes": ["dependency-groups"],
       "matchUpdateTypes": ["minor", "patch"],
       "groupName": "dev dependencies",
-      "groupSlug": "weekly-dev"
+      "commitMessageAction": "Update",
+      "commitMessageTopic": "dev deps",
+      "commitMessageExtra": "{{depName}} to {{newVersion}}",
+      "automerge": true,
+      "automergeType": "pr"
     },
     {
       "matchManagers": ["pre-commit"],
       "matchUpdateTypes": ["minor", "patch"],
       "groupName": "pre-commit hooks",
-      "groupSlug": "weekly-precommit"
+      "commitMessageAction": "Update",
+      "commitMessageTopic": "pre-commit hooks",
+      "commitMessageExtra": "{{depName}} to {{newVersion}}",
+      "automerge": true,
+      "automergeType": "pr"
     },
     {
       "matchManagers": ["github-actions"],
       "matchUpdateTypes": ["minor", "patch"],
       "groupName": "GitHub Actions",
-      "groupSlug": "weekly-gh-actions"
+      "commitMessageAction": "Update",
+      "commitMessageTopic": "GitHub Actions",
+      "commitMessageExtra": "{{depName}} to {{newVersion}}",
+      "automerge": true,
+      "automergeType": "pr"
     },
     {
       "matchUpdateTypes": ["lockFileMaintenance"],
       "groupName": "lockfile maintenance",
-      "groupSlug": "weekly-lockfiles"
+      "commitMessageAction": "Update",
+      "commitMessageTopic": "lockfiles",
+      "automerge": true,
+      "automergeType": "pr"
     }
   ]
 }

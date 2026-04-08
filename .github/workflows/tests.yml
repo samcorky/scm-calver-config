@@ -3,6 +3,13 @@ name: Run python tests
 on:
   pull_request:
     types: [opened, synchronize, reopened]
+    paths:
+      - ".github/workflows/tests.yml"
+      - "pyproject.toml"
+      - "uv.lock"
+      - "src/**"
+      - "tests/**"
+
   workflow_dispatch:
 
 jobs:
@@ -27,7 +34,7 @@ jobs:
         run: uv sync --frozen --no-dev
 
       - name: Install test dependencies
-        run: uv sync --frozen
+        run: uv sync --frozen --dev
 
       - name: Run tests
         run: uv run pytest
