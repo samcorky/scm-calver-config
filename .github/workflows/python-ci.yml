@@ -23,7 +23,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Install UV
-        uses: astral-sh/setup-uv@v8
+        uses: astral-sh/setup-uv@v8.0.0
 
       - name: Sync dependencies
         run: uv sync --frozen --no-dev
