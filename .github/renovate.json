@@ -13,7 +13,7 @@
     ":updateNotScheduled",
     ":maintainLockFilesWeekly",
     ":rebaseStalePrs",
-    ":automergePatch",
+    ":automergeMinor",
     ":combinePatchMinorReleases",
     "security:openssf-scorecard"
   ],
