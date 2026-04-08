@@ -55,6 +55,9 @@ Repository = "https://github.com/samcorky/calver-scm"
 Issues = "https://github.com/samcorky/calver-scm/issues"
 Changelog = "https://github.com/samcorky/calver-scm/releases"
 
+[tool.uv]
+required-version = ">=0.7.10"
+
 [build-system]
 requires = ["hatchling>=1.29.0", "hatch-vcs>=0.5.0"]
 build-backend = "hatchling.build"
