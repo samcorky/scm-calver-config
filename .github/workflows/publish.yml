@@ -39,10 +39,10 @@ jobs:
 
       # Run the full test suite against the built distributions to ensure integrity
       - name: Test (wheel)
-        run: uv run --isolated --no-project --with dist/*.whl pytest
+        run: uv run --isolated --no-project --with dist/*.whl --with pytest pytest
 
       - name: Test (source distribution)
-        run: uv run --isolated --no-project --with dist/*.tar.gz pytest
+        run: uv run --isolated --no-project --with dist/*.tar.gz --with pytest pytest
 
       - name: Publish
         run: uv publish
