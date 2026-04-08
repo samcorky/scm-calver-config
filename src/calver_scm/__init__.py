@@ -1,4 +1,8 @@
-""" calver-scm - Automatic, date-based versioning for Python projects — powered by your Git history."""
+"""
+calver-scm
+
+Automatic, date-based versioning for Python projects — powered by your Git history.
+"""
 
 from __future__ import annotations
 
