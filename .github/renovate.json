@@ -30,10 +30,19 @@
     {
       "matchManagers": ["pep621"],
       "matchDepTypes": ["project.dependencies", "build-system.requires"],
+      "rangeStrategy": "widen"
+    },
+    {
+      "matchManagers": ["pep621"],
+      "matchDepTypes": ["dependency-groups"],
+      "rangeStrategy": "widen"
+    },
+    {
+      "matchManagers": ["pep621"],
+      "matchDepTypes": ["project.dependencies", "build-system.requires"],
       "matchUpdateTypes": ["minor", "patch"],
       "groupName": "runtime dependencies",
       "groupSlug": "weekly-runtime",
-      "rangeStrategy": "widen",
       "commitMessageAction": "chore",
       "commitMessageTopic": "runtime deps",
       "commitMessageExtra": "Update {{depName}} to {{newVersion}}"
@@ -44,7 +53,6 @@
       "matchUpdateTypes": ["minor", "patch"],
       "groupName": "dev dependencies",
       "groupSlug": "weekly-dev",
-      "rangeStrategy": "widen",
       "commitMessageAction": "chore",
       "commitMessageTopic": "dev deps",
       "commitMessageExtra": "Update {{depName}} to {{newVersion}}"
