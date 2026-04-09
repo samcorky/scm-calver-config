@@ -5,7 +5,7 @@
 [![PyPI version][pypi-version-badge]][pypi-link]
 [![PyPI downloads][pypi-downloads-badge]][pypi-link]
 [![Python versions][python-badge]][pypi-link]
-[![License: MIT][license-badge]](LICENSE)
+[![License: MIT][license-badge]][license-link]
 [![CI][ci-badge]][ci-link]
 [![Ruff][ruff-badge]][ruff-link]
 [![uv][uv-badge]][uv-link]
@@ -246,7 +246,7 @@ Pull requests and issues are welcome!
 
 ## License
 
-[MIT](LICENSE)
+[MIT][license-link]
 
 <!-- Badge references -->
 [pypi-version-badge]: https://img.shields.io/pypi/v/calver-scm?logo=pypi&logoColor=white
@@ -265,3 +265,4 @@ Pull requests and issues are welcome!
 [uv-link]: https://github.com/astral-sh/uv
 [mypy-link]: https://mypy-lang.org/
 [precommit-link]: https://pre-commit.com/
+[license-link]: https://github.com/samcorky/calver-scm/blob/main/LICENSE
