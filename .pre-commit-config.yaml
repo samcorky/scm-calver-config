@@ -1,3 +1,13 @@
+ci:
+  autofix_prs: true
+  autofix_commit_msg: |
+    [pre-commit.ci] auto fixes
+  autoupdate_commit_msg: |
+    [pre-commit.ci] pre-commit autoupdate
+  autoupdate_schedule: monthly
+  skip:
+    - renovate-config-validator
+
 default_stages: [pre-commit, pre-push]
 
 repos:
@@ -24,24 +34,3 @@ repos:
     rev: v0.25
     hooks:
       - id: validate-pyproject
-
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.9
-    hooks:
-      - id: ruff-check
-      - id: ruff-format
-
-  - repo: local
-    hooks:
-      - id: mypy
-        name: mypy
-        entry: uv run mypy
-        language: system
-        types: [python]
-
-      - id: pytest
-        name: pytest
-        entry: uv run pytest
-        language: system
-        pass_filenames: false
-        stages: [pre-push]

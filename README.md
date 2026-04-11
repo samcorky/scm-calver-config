@@ -6,11 +6,15 @@
 [![PyPI downloads][pypi-downloads-badge]][pypi-link]
 [![Python versions][python-badge]][pypi-link]
 [![License: MIT][license-badge]][license-link]
-[![CI][ci-badge]][ci-link]
+[![Lint][lint-badge]][lint-link]
+[![Format][format-badge]][format-link]
+[![Tests][tests-badge]][tests-link]
 [![Ruff][ruff-badge]][ruff-link]
 [![uv][uv-badge]][uv-link]
 [![mypy][mypy-badge]][mypy-link]
-[![pre-commit][precommit-badge]][precommit-link]
+[![pre-commit.ci][precommit-badge]][precommit-link]
+
+---
 
 `calver-scm` is a [setuptools-scm](https://github.com/pypa/setuptools_scm) plugin that generates [CalVer](https://calver.org) version strings directly from your Git tags and commit history. No `__version__` files to maintain, no manual bumping — just tag and go.
 
@@ -248,21 +252,24 @@ Pull requests and issues are welcome!
 
 [MIT][license-link]
 
-<!-- Badge references -->
 [pypi-version-badge]: https://img.shields.io/pypi/v/calver-scm?logo=pypi&logoColor=white
 [pypi-downloads-badge]: https://img.shields.io/pypi/dm/calver-scm?logo=pypi&logoColor=white
 [python-badge]: https://img.shields.io/pypi/pyversions/calver-scm?logo=python&logoColor=white
 [license-badge]: https://img.shields.io/badge/license-MIT-green
-[ci-badge]: https://img.shields.io/github/actions/workflow/status/samcorky/calver-scm/publish.yml?logo=github&label=CI
+[lint-badge]: https://img.shields.io/github/actions/workflow/status/samcorky/calver-scm/lint.yml?branch=main&logo=githubactions&label=lint
+[format-badge]: https://img.shields.io/github/actions/workflow/status/samcorky/calver-scm/format.yml?branch=main&logo=githubactions&label=format
+[tests-badge]: https://img.shields.io/github/actions/workflow/status/samcorky/calver-scm/tests.yml?branch=main&logo=githubactions&label=tests
 [ruff-badge]: https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json
 [uv-badge]: https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json
 [mypy-badge]: https://img.shields.io/badge/mypy-checked-blue?logo=python&logoColor=white
-[precommit-badge]: https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit
+[precommit-badge]: https://results.pre-commit.ci/badge/github/samcorky/calver-scm/main.svg
 
 [pypi-link]: https://pypi.org/project/calver-scm/
-[ci-link]: https://github.com/samcorky/calver-scm/actions/workflows/publish.yml
+[lint-link]: https://github.com/samcorky/calver-scm/actions/workflows/lint.yml
+[format-link]: https://github.com/samcorky/calver-scm/actions/workflows/format.yml
+[tests-link]: https://github.com/samcorky/calver-scm/actions/workflows/tests.yml
 [ruff-link]: https://github.com/astral-sh/ruff
 [uv-link]: https://github.com/astral-sh/uv
 [mypy-link]: https://mypy-lang.org/
-[precommit-link]: https://pre-commit.com/
+[precommit-link]: https://results.pre-commit.ci/latest/github/samcorky/calver-scm/main
 [license-link]: https://github.com/samcorky/calver-scm/blob/main/LICENSE
