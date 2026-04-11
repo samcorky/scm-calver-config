@@ -98,14 +98,14 @@ Every version follows the pattern:
 YYYY.MM[.DD].PATCH[.devN][+dirty]
 ```
 
-| Situation | Example |
-|---|---|
-| Clean tag, month mode | `2026.04.0` |
-| Commits after tag, same month | `2026.04.1.dev3` |
-| Commits after tag, previous month's tag | `2026.05.0.dev3` |
-| Clean tag, day mode | `2026.04.15.0` |
-| Dirty working tree | `2026.04.0+dirty` |
-| No tag yet | `2026.04.0.dev12` |
+| Situation                               | Example           |
+|-----------------------------------------|-------------------|
+| Clean tag, month mode                   | `2026.04.0`       |
+| Commits after tag, same month           | `2026.04.1.dev3`  |
+| Commits after tag, previous month's tag | `2026.05.0.dev3`  |
+| Clean tag, day mode                     | `2026.04.15.0`    |
+| Dirty working tree                      | `2026.04.0+dirty` |
+| No tag yet                              | `2026.04.0.dev12` |
 
 The **patch** segment increments automatically from your last tag within the current period, and resets to `0` whenever the month (or day, in day mode) rolls over.
 
@@ -201,12 +201,12 @@ tag_prefix = "release-"
 
 Every option can be overridden at build time without touching `pyproject.toml` — handy for CI pipelines.
 
-| Variable | Equivalent option |
-|---|---|
-| `SCM_CALVER_MODE` | `mode` |
-| `SCM_CALVER_PATCH` | `patch` (`true` / `false`) |
-| `SCM_CALVER_FALLBACK` | `fallback` |
-| `SCM_CALVER_TAG_PREFIX` | `tag_prefix` |
+| Variable                | Equivalent option          |
+|-------------------------|----------------------------|
+| `SCM_CALVER_MODE`       | `mode`                     |
+| `SCM_CALVER_PATCH`      | `patch` (`true` / `false`) |
+| `SCM_CALVER_FALLBACK`   | `fallback`                 |
+| `SCM_CALVER_TAG_PREFIX` | `tag_prefix`               |
 
 Environment variables take precedence over `pyproject.toml`.
 

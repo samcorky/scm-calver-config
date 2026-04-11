@@ -1,5 +1,6 @@
-from packaging.version import InvalidVersion
+from __future__ import annotations
 
+from packaging.version import InvalidVersion
 from calver_scm.calver_version import CalverVersion
 from calver_scm.config import CalverConfig
 

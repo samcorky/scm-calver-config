@@ -1,3 +1,4 @@
+from __future__ import annotations
 from typing import Literal
 
 from packaging.version import Version
