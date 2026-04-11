@@ -5,6 +5,7 @@ on:
     types: [opened, synchronize, reopened]
     paths:
       - ".github/workflows/tests.yml"
+      - "codecov.yml"
       - "pyproject.toml"
       - "uv.lock"
       - "src/**"
@@ -35,4 +36,11 @@ jobs:
         run: uv sync --frozen --dev
 
       - name: Run pytest
-        run: uv run pytest
+        run: uv run pytest --cov-report=xml
+
+      - name: Upload coverage to Codecov
+        if: matrix.python-version == '3.14'
+        uses: codecov/codecov-action@v5
+        with:
+          files: coverage.xml
+          fail_ci_if_error: true
