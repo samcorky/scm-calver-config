@@ -45,15 +45,21 @@ repos:
         entry: uv run ruff check
         language: system
         pass_filenames: false
+        types: [python]
+        files: '.*\.py$'
 
       - id: ruff-format
         name: ruff format
         entry: uv run ruff format
         language: system
         pass_filenames: false
+        types: [python]
+        files: '.*\.py$'
 
       - id: mypy
         name: mypy
         entry: uv run mypy
         language: system
         pass_filenames: false
+        types: [python]
+        files: '.*\.py$'
