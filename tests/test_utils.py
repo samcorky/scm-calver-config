@@ -123,7 +123,7 @@ def test_today_in_timezone_supports_local_and_utc(
     if timezone == "local":
         assert _RecorderDateTime.last_tz is None
     else:
-        assert _RecorderDateTime.last_tz is dt.UTC
+        assert _RecorderDateTime.last_tz is dt.timezone.utc
 
 
 def test_today_in_timezone_supports_iana_zone_with_stubbed_zoneinfo(
