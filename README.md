@@ -1,3 +1,5 @@
+<div align="center">
+
 # calver-scm
 
 **Automatic, date-based versioning for Python projects — powered by your Git history.**
@@ -6,14 +8,16 @@
 [![PyPI downloads][pypi-downloads-badge]][pypi-link]
 [![Python versions][python-badge]][pypi-link]
 [![License: MIT][license-badge]][license-link]
-[![Lint][lint-badge]][lint-link]
-[![Format][format-badge]][format-link]
 [![Tests][tests-badge]][tests-link]
 [![Coverage][coverage-badge]][coverage-link]
+[![Lint][lint-badge]][lint-link]
+[![Format][format-badge]][format-link]
 [![Ruff][ruff-badge]][ruff-link]
 [![uv][uv-badge]][uv-link]
 [![mypy][mypy-badge]][mypy-link]
 [![pre-commit.ci][precommit-badge]][precommit-link]
+
+</div>
 
 ---
 
@@ -32,6 +36,17 @@ Versions look like this:
 
 ---
 
+## Contents
+
+- [Installation](#installation)
+- [How versions are generated](#how-versions-are-generated)
+- [Pre-release, post-release, and local tags](#pre-release-post-release-and-local-tags)
+- [Configuration](#configuration)
+- [Environment variable overrides](#environment-variable-overrides)
+- [Local scheme](#local-scheme)
+- [Requirements](#requirements)
+- [Contributing](#contributing)
+
 ## Installation
 
 ```bash
@@ -40,21 +55,9 @@ pip install calver-scm
 
 Then wire it into your `pyproject.toml`. Pick the setup that matches your build backend:
 
-### With setuptools
+### Quickstart (hatch-vcs, recommended)
 
-```toml
-[build-system]
-requires = ["setuptools", "setuptools-scm", "calver-scm"]
-build-backend = "setuptools.build_meta"
-
-[tool.setuptools_scm]
-version_scheme = "calver_scm"
-local_scheme   = "dirty-tag"
-```
-
-### With hatch-vcs (recommended)
-
-[hatch-vcs](https://github.com/ofek/hatch-vcs) is a Hatchling plugin that delegates versioning to setuptools-scm under the hood. It's a great pairing with `calver-scm` — Hatchling handles your build, hatch-vcs reads the Git tags, and `calver-scm` turns them into CalVer strings.
+If you use Hatchling, this is the shortest working setup:
 
 ```toml
 [build-system]
@@ -72,9 +75,30 @@ version_scheme = "calver_scm"
 local_scheme   = "dirty-tag"
 ```
 
-The `raw-options` table passes arguments directly through hatch-vcs to setuptools-scm, so `calver_scm` is picked up exactly as if you had configured it directly.
+`dynamic = ["version"]` is required so Hatch knows the version is resolved from VCS at build time.
 
-Optionally, you can have hatch-vcs write the resolved version to a `_version.py` file at build time — handy if you want `your_package.__version__` to be available at runtime:
+### With setuptools
+
+```toml
+[build-system]
+requires = ["setuptools", "setuptools-scm", "calver-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+dynamic = ["version"]
+
+[tool.setuptools_scm]
+version_scheme = "calver_scm"
+local_scheme   = "dirty-tag"
+```
+
+`dynamic = ["version"]` is required when using PEP 621 metadata in `pyproject.toml`.
+
+### hatch-vcs extras (optional)
+
+The quickstart config above is enough for most projects. If you want a runtime
+`__version__` file, hatch-vcs can write one during builds:
+
 
 ```toml
 [tool.hatch.build.hooks.vcs]
@@ -88,6 +112,11 @@ from ._version import __version__
 ```
 
 That's it. Your project will now version itself automatically on every build.
+
+### CI note
+
+This plugin derives versions from Git history and tags. In CI, make sure your
+checkout includes tags and enough history to resolve the latest version tag.
 
 ---
 
@@ -109,6 +138,8 @@ YYYY.MM[.DD].PATCH[.devN][+dirty]
 | No tag yet                              | `2026.04.0.dev12` |
 
 The **patch** segment increments automatically from your last tag within the current period, and resets to `0` whenever the month (or day, in day mode) rolls over.
+
+The date segment is derived from the build/runtime date, not from commit timestamps.
 
 ## Pre-release, post-release, and local tags
 
