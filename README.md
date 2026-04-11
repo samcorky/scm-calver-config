@@ -332,7 +332,7 @@ Pull requests and issues are welcome!
 [lint-badge]: https://img.shields.io/github/actions/workflow/status/samcorky/calver-scm/lint.yml?branch=main&logo=githubactions&label=lint
 [format-badge]: https://img.shields.io/github/actions/workflow/status/samcorky/calver-scm/format.yml?branch=main&logo=githubactions&label=format
 [tests-badge]: https://img.shields.io/github/actions/workflow/status/samcorky/calver-scm/tests.yml?branch=main&logo=githubactions&label=tests
-[coverage-badge]: https://codecov.io/gh/samcorky/calver-scm/branch/main/graph/badge.svg
+[coverage-badge]: https://codecov.io/github/samcorky/calver-scm/graph/badge.svg?token=62AQDRXNIA
 [ruff-badge]: https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json
 [uv-badge]: https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json
 [mypy-badge]: https://img.shields.io/badge/mypy-checked-blue?logo=python&logoColor=white
@@ -342,7 +342,7 @@ Pull requests and issues are welcome!
 [lint-link]: https://github.com/samcorky/calver-scm/actions/workflows/lint.yml
 [format-link]: https://github.com/samcorky/calver-scm/actions/workflows/format.yml
 [tests-link]: https://github.com/samcorky/calver-scm/actions/workflows/tests.yml
-[coverage-link]: https://codecov.io/gh/samcorky/calver-scm
+[coverage-link]: https://codecov.io/github/samcorky/calver-scm
 [ruff-link]: https://github.com/astral-sh/ruff
 [uv-link]: https://github.com/astral-sh/uv
 [mypy-link]: https://mypy-lang.org/
