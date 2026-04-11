@@ -7,6 +7,9 @@ ci:
   autoupdate_schedule: monthly
   skip:
     - renovate-config-validator
+    - mypy
+    - ruff-check
+    - ruff-format
 
 default_stages: [pre-commit, pre-push]
 
@@ -34,3 +37,30 @@ repos:
     rev: v0.25
     hooks:
       - id: validate-pyproject
+        files: ^pyproject\.toml$
+
+  - repo: local
+    hooks:
+      - id: ruff-check
+        name: ruff check
+        entry: uv run ruff check
+        language: system
+        pass_filenames: false
+        types: [python]
+        files: '.*\.py$'
+
+      - id: ruff-format
+        name: ruff format
+        entry: uv run ruff format
+        language: system
+        pass_filenames: false
+        types: [python]
+        files: '.*\.py$'
+
+      - id: mypy
+        name: mypy
+        entry: uv run mypy
+        language: system
+        pass_filenames: false
+        types: [python]
+        files: '.*\.py$'
