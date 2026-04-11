@@ -24,7 +24,6 @@ import pytest
 # noinspection PyProtectedMember
 from calver_scm import calver_scm
 
-
 TODAY = datetime.date(2026, 4, 15)
 JANUARY = datetime.date(2026, 1, 5)
 
@@ -257,7 +256,6 @@ class TestParseTag:
         assert parsed is not None
         assert _release_components(parsed, cfg) is None
 
-
     def test_no_prefix(self) -> None:
         cfg = make_config(tag_prefix="")
         parsed = _parse_tag("2026.04.0", cfg)
@@ -271,7 +269,6 @@ class TestParseTag:
     def test_non_numeric_returns_none(self) -> None:
         cfg = make_config()
         assert _parse_tag("vabc.def.ghi", cfg) is None
-
 
 
 # noinspection PyArgumentEqualDefault
@@ -451,8 +448,10 @@ class TestCalverScm:
             result = calver_scm(make_version(distance=1))
             assert result == "2026.04.0.dev1"
 
+
 class TestIntegration:
     """End-to-end integration tests."""
+
     @pytest.mark.parametrize(
         ("tag", "expected"),
         [
@@ -465,10 +464,10 @@ class TestIntegration:
         ],
     )
     def test_clean_tag_preserves_pep440_segments(
-            self,
-            freeze_april: object,
-            tag: str,
-            expected: str,
+        self,
+        freeze_april: object,
+        tag: str,
+        expected: str,
     ) -> None:
         result = calver_scm(make_version(tag=tag))
         assert result == expected
@@ -482,11 +481,11 @@ class TestIntegration:
         ],
     )
     def test_day_mode_clean_tag_preserves_pep440_segments(
-            self,
-            freeze_april: object,
-            tmp_path: Path,
-            tag: str,
-            expected: str,
+        self,
+        freeze_april: object,
+        tmp_path: Path,
+        tag: str,
+        expected: str,
     ) -> None:
         (tmp_path / "pyproject.toml").write_bytes(b'[tool.calver_scm]\nmode = "day"\n')
         result = calver_scm(make_version(tag=tag, root=str(tmp_path)))
@@ -502,9 +501,9 @@ class TestIntegration:
         ],
     )
     def test_clean_tag_normalizes_pep440_aliases(
-            self,
-            freeze_april: object,
-            tag: str,
-            expected: str,
+        self,
+        freeze_april: object,
+        tag: str,
+        expected: str,
     ) -> None:
         assert calver_scm(make_version(tag=tag)) == expected

@@ -1,9 +1,12 @@
 from __future__ import annotations
+
 import os
 from dataclasses import dataclass
 from functools import lru_cache
-from pathlib import Path
-from typing import Literal, Any
+from typing import TYPE_CHECKING, Any, Literal
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 try:
     # noinspection PyCompatibility
@@ -11,6 +14,7 @@ try:
 except ModuleNotFoundError:
     # noinspection SpellCheckingInspection
     import tomli as tomllib  # type: ignore[import-not-found, no-redef]
+
 
 @dataclass(frozen=True, slots=True)
 class CalverConfig:

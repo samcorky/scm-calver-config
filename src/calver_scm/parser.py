@@ -1,8 +1,13 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from packaging.version import InvalidVersion
+
 from calver_scm.calver_version import CalverVersion
-from calver_scm.config import CalverConfig
+
+if TYPE_CHECKING:
+    from calver_scm.config import CalverConfig
 
 
 def _parse_tag(tag: str, cfg: CalverConfig) -> CalverVersion | None:
@@ -16,8 +21,8 @@ def _parse_tag(tag: str, cfg: CalverConfig) -> CalverVersion | None:
 
 
 def _release_components(
-        version: CalverVersion,
-        cfg: CalverConfig,
+    version: CalverVersion,
+    cfg: CalverConfig,
 ) -> tuple[int, int, int, int] | None:
     """Extract (year, month, day, patch) from a parsed CalVer version."""
     release = version.release

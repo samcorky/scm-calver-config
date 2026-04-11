@@ -1,15 +1,19 @@
 from __future__ import annotations
-import datetime
 
-from calver_scm.config import CalverConfig
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import datetime
+
+    from calver_scm.config import CalverConfig
 
 
 def _is_same_period(
-        today: datetime.date,
-        tag_year: int,
-        tag_month: int,
-        tag_day: int,
-        cfg: CalverConfig,
+    today: datetime.date,
+    tag_year: int,
+    tag_month: int,
+    tag_day: int,
+    cfg: CalverConfig,
 ) -> bool:
     """Check if today is in the same CalVer period as the tag."""
     same = today.year == tag_year and today.month == tag_month

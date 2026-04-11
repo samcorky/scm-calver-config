@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -9,7 +10,6 @@ from calver_scm.utils import _base, _is_same_period
 
 if TYPE_CHECKING:
     from setuptools_scm.version import ScmVersion
-
 
 
 def calver_scm(version: ScmVersion) -> str:
