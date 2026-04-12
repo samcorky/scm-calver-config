@@ -7,9 +7,6 @@ ci:
   autoupdate_schedule: monthly
   skip:
     - renovate-config-validator
-    - mypy
-    - ruff-check
-    - ruff-format
 
 default_stages: [pre-commit, pre-push]
 
