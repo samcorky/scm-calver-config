@@ -1,7 +1,7 @@
 [project]
 name = "calver-scm"
 dynamic = ["version", "readme"]
-description = "Automatic, configurable CalVer versioning for setuptools-scm — no manual bumping required"
+description = "Automatic, date-based versioning for Python projects, powered by your Git history."
 requires-python = ">=3.10"
 dependencies = [
     "setuptools-scm>=10.0.5",
