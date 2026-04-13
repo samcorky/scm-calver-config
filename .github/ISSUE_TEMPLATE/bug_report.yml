@@ -3,7 +3,6 @@ description: Report incorrect or unexpected behaviour in calver-scm
 title: "[bug]: "
 labels:
   - bug
-type: bug
 body:
   - type: markdown
     attributes:
@@ -91,8 +90,6 @@ body:
       label: setuptools-scm version
       description: The installed `setuptools-scm` version, if applicable.
       placeholder: e.g. 8.1.0
-    validations:
-      required: false
 
   - type: textarea
     id: pyproject-configuration
@@ -112,5 +109,3 @@ body:
       label: Additional context
       description: Add any other context, such as stack traces, related issues, or screenshots.
       placeholder: Share anything else that may help us triage the issue.
-    validations:
-      required: false

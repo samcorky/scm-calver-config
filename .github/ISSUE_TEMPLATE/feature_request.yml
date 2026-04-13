@@ -3,7 +3,6 @@ description: Suggest an improvement or new capability for calver-scm
 title: "[feature]: "
 labels:
   - enhancement
-type: feature
 body:
   - type: markdown
     attributes:
@@ -48,8 +47,6 @@ body:
       placeholder: |
         [tool.setuptools_scm]
         # ...
-    validations:
-      required: false
 
   - type: textarea
     id: alternatives
@@ -57,8 +54,6 @@ body:
       label: Alternatives considered
       description: Have you considered any workarounds or alternative approaches?
       placeholder: Describe alternatives and why the proposed solution is preferable.
-    validations:
-      required: false
 
   - type: textarea
     id: additional-context
@@ -66,5 +61,3 @@ body:
       label: Additional context
       description: Add any supporting context, links, prior art, or related issues.
       placeholder: Share any extra context that may help shape the request.
-    validations:
-      required: false
