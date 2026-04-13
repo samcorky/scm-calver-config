@@ -69,20 +69,21 @@ packages = ["src/calver_scm"]
 [tool.hatch.metadata.hooks.fancy-pypi-readme]
 content-type = "text/markdown"
 
-# Title block: project name + version injected from packaging metadata.
-# Replaces the badge-heavy <div> header stripped below.
-[[tool.hatch.metadata.hooks.fancy-pypi-readme.fragments]]
-text = "# $HFPR_PACKAGE_NAME $HFPR_VERSION\n\n"
-
-# Fragment 1: skip the badge-heavy <div> header (redundant on PyPI — version,
-# Python versions and licence are shown natively in the PyPI sidebar).
-# Start from the intro paragraph and stop before the Contributing dev-setup block.
+# Fragment 1: skip the badge-heavy <div> header and the leading markdown
+# divider, then keep the intro up to the table of contents.
 [[tool.hatch.metadata.hooks.fancy-pypi-readme.fragments]]
 path = "README.md"
-start-after = "</div>"
+start-after = "\n---\n\n"
+end-before = "\n## Contents"
+
+# Fragment 2: resume at Installation, excluding the in-page table of contents,
+# and stop before the Contributing dev-setup block.
+[[tool.hatch.metadata.hooks.fancy-pypi-readme.fragments]]
+path = "README.md"
+start-at = "\n## Installation"
 end-before = "\n## Contributing"
 
-# Fragment 2: jump straight to License, skipping the dev setup block
+# Fragment 3: jump straight to License, skipping the dev setup block.
 [[tool.hatch.metadata.hooks.fancy-pypi-readme.fragments]]
 path = "README.md"
 start-at = "\n## License"
