@@ -8,7 +8,6 @@ from functools import lru_cache
 from typing import TYPE_CHECKING, Any
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-
 if TYPE_CHECKING:
     from pathlib import Path
 

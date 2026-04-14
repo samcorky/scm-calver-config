@@ -28,9 +28,7 @@ def calver_scm(version: ScmVersion) -> str:
     if version.tag is None:
         return _apply_stability_prefix(
             _fallback_version(
-                base=base,
-                distance=version.distance,
-                fallback=cfg.fallback
+                base=base, distance=version.distance, fallback=cfg.fallback
             ),
             cfg,
         )
@@ -40,9 +38,7 @@ def calver_scm(version: ScmVersion) -> str:
     if parsed is None:
         return _apply_stability_prefix(
             _fallback_version(
-                base=base,
-                distance=version.distance,
-                fallback=cfg.fallback
+                base=base, distance=version.distance, fallback=cfg.fallback
             ),
             cfg,
         )
@@ -52,9 +48,7 @@ def calver_scm(version: ScmVersion) -> str:
     if components is None:
         return _apply_stability_prefix(
             _fallback_version(
-                base=base,
-                distance=version.distance,
-                fallback=cfg.fallback
+                base=base, distance=version.distance, fallback=cfg.fallback
             ),
             cfg,
         )
