@@ -69,7 +69,7 @@ def _fallback_version(*, base: str, distance: int, fallback: FallbackMode) -> st
 
 def _apply_stability_prefix(version: str, cfg: CalverConfig) -> str:
     """Prefix output with `0.` when project stability is explicitly disabled."""
-    if cfg.stable or version.startswith("0."):
+    if cfg.stable:
         return version
     return f"0.{version}"
 
