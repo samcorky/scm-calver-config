@@ -8,6 +8,17 @@ from functools import lru_cache
 from typing import TYPE_CHECKING, Any
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
+if TYPE_CHECKING:
+    from pathlib import Path
+
+if sys.version_info >= (3, 11):  # pragma: no cover
+    # noinspection PyCompatibility
+    import tomllib
+else:  # pragma: no cover
+    # noinspection SpellCheckingInspection
+    import tomli as tomllib
+
+
 TRUE_ENV_VALUES = frozenset(("1", "true", "yes", "on"))
 FALSE_ENV_VALUES = frozenset(("0", "false", "no", "off"))
 
@@ -52,17 +63,6 @@ class FallbackMode(_StrEnum):
             raise ValueError(f"Invalid fallback: {value!r}") from e
 
 
-if TYPE_CHECKING:
-    from pathlib import Path
-
-if sys.version_info >= (3, 11):  # pragma: no cover
-    # noinspection PyCompatibility
-    import tomllib
-else:  # pragma: no cover
-    # noinspection SpellCheckingInspection
-    import tomli as tomllib
-
-
 @dataclass(frozen=True, slots=True)
 class CalverConfig:
     """Configuration for the CalVer versioning scheme."""
@@ -70,6 +70,7 @@ class CalverConfig:
     mode: CalverMode = CalverMode.MONTH
     scheme: str | None = None
     patch: bool = True
+    stable: bool = True
     fallback: FallbackMode = FallbackMode.DEV
     tag_prefix: str = "v"
     timezone: str = "UTC"
@@ -98,6 +99,8 @@ class CalverConfig:
             self._validate_scheme_tokens(self.scheme_tokens)
         if not isinstance(self.patch, bool):
             raise ValueError(f"Invalid patch value: {self.patch!r}")
+        if not isinstance(self.stable, bool):
+            raise ValueError(f"Invalid stable value: {self.stable!r}")
         if not isinstance(self.tag_prefix, str):
             raise ValueError(f"Invalid tag_prefix: {self.tag_prefix!r}")
         if not isinstance(self.timezone, str):
@@ -117,6 +120,7 @@ class CalverConfig:
         mode = data.get("mode", CalverMode.MONTH)
         scheme = data.get("scheme")
         patch = data.get("patch", True)
+        stable = data.get("stable", True)
         fallback = data.get("fallback", FallbackMode.DEV)
         tag_prefix = data.get("tag_prefix", "v")
         timezone = data.get("timezone", "UTC")
@@ -125,6 +129,7 @@ class CalverConfig:
             mode=mode,
             scheme=scheme,
             patch=patch,
+            stable=stable,
             fallback=fallback,
             tag_prefix=tag_prefix,
             timezone=timezone,
@@ -145,7 +150,7 @@ class CalverConfig:
 
     @classmethod
     def _validate_scheme_tokens(cls, tokens: tuple[str, ...]) -> None:
-        """Validate that token sequence is supported and internally consistent."""
+        """Validate that a token sequence is supported and internally consistent."""
         if any(token not in cls._ALLOWED_SCHEME_TOKENS for token in tokens):
             raise ValueError("Invalid scheme")
 
@@ -166,6 +171,7 @@ class CalverConfig:
             "mode": base.mode,
             "scheme": base.scheme,
             "patch": base.patch,
+            "stable": base.stable,
             "fallback": base.fallback,
             "tag_prefix": base.tag_prefix,
             "timezone": base.timezone,
@@ -185,6 +191,17 @@ class CalverConfig:
                 raise ValueError(
                     f"Invalid CALVER_SCM_PATCH value: "
                     f"{os.environ['CALVER_SCM_PATCH']!r}"
+                )
+        if "CALVER_SCM_STABLE" in os.environ:
+            value = os.environ["CALVER_SCM_STABLE"].strip().lower()
+            if value in TRUE_ENV_VALUES:
+                data["stable"] = True
+            elif value in FALSE_ENV_VALUES:
+                data["stable"] = False
+            else:
+                raise ValueError(
+                    f"Invalid CALVER_SCM_STABLE value: "
+                    f"{os.environ['CALVER_SCM_STABLE']!r}"
                 )
         if "CALVER_SCM_FALLBACK" in os.environ:
             data["fallback"] = os.environ["CALVER_SCM_FALLBACK"]

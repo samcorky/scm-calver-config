@@ -15,9 +15,30 @@ def _parse_tag(tag: str, cfg: CalverConfig) -> CalverVersion | None:
     stripped = tag.removeprefix(cfg.tag_prefix)
 
     try:
-        return CalverVersion(stripped)
+        parsed = CalverVersion(stripped)
     except InvalidVersion:
         return None
+
+    if _has_misplaced_stability_prefix(stripped, parsed, cfg):
+        return None
+
+    return parsed
+
+
+def _has_misplaced_stability_prefix(
+    stripped: str,
+    version: CalverVersion,
+    cfg: CalverConfig,
+) -> bool:
+    """Reject clearly unstable-prefixed tags when stable output is configured."""
+    if not cfg.stable or not stripped.startswith("0."):
+        return False
+
+    first_token = cfg.scheme_tokens[0]
+    if first_token != "YY":
+        return True
+
+    return len(version.release) > len(cfg.scheme_tokens) + 1
 
 
 def _release_components(
@@ -26,6 +47,8 @@ def _release_components(
 ) -> tuple[tuple[int, ...], int] | None:
     """Extract (date parts, patch) from a parsed CalVer version."""
     release = version.release
+    if not cfg.stable and release and release[0] == 0:
+        release = release[1:]
     date_len = len(cfg.scheme_tokens)
 
     if len(release) == date_len:

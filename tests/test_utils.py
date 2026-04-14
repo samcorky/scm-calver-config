@@ -9,6 +9,7 @@ from calver_scm.config import CalverConfig, CalverMode, FallbackMode
 
 # noinspection PyProtectedMember
 from calver_scm.utils import (
+    _apply_stability_prefix,
     _base,
     _date_parts,
     _fallback_version,
@@ -95,6 +96,23 @@ def test_fallback_version_renders_expected_modes(
 ) -> None:
     """Render fallback output for both supported fallback modes."""
     assert _fallback_version(base="2026.04", distance=5, fallback=fallback) == expected
+
+
+@pytest.mark.parametrize(
+    ("cfg", "version", "expected"),
+    [
+        (CalverConfig(stable=True), "2026.04.0", "2026.04.0"),
+        (CalverConfig(stable=False), "2026.04.0", "0.2026.04.0"),
+        (CalverConfig(stable=False), "0.04.0", "0.0.04.0"),
+    ],
+)
+def test_apply_stability_prefix_respects_config_only(
+    cfg: CalverConfig,
+    version: str,
+    expected: str,
+) -> None:
+    """Apply exactly one configured unstable prefix, regardless of base shape."""
+    assert _apply_stability_prefix(version, cfg) == expected
 
 
 class _RecorderDateTime(dt.datetime):

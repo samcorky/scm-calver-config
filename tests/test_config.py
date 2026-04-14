@@ -60,6 +60,7 @@ def test_scheme_tokens_from_explicit_scheme() -> None:
         {"scheme": "0M.0D"},
         {"scheme": "YYYY.0W.0D"},
         {"patch": "true"},
+        {"stable": "false"},
         {"tag_prefix": 1},
         {"timezone": 1},
         {"timezone": "   "},
@@ -78,6 +79,7 @@ def test_from_dict_applies_defaults() -> None:
     assert cfg.mode is CalverMode.YEAR
     assert cfg.scheme is None
     assert cfg.patch is True
+    assert cfg.stable is True
     assert cfg.fallback is FallbackMode.DEV
     assert cfg.tag_prefix == "v"
     assert cfg.timezone == "UTC"
@@ -94,6 +96,7 @@ def test_overlay_env_overrides_values(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("CALVER_SCM_MODE", "day")
     monkeypatch.setenv("CALVER_SCM_SCHEME", "YYYY.0M.0D")
     monkeypatch.setenv("CALVER_SCM_PATCH", "off")
+    monkeypatch.setenv("CALVER_SCM_STABLE", "no")
     monkeypatch.setenv("CALVER_SCM_FALLBACK", "date")
     monkeypatch.setenv("CALVER_SCM_TAG_PREFIX", "release-")
     monkeypatch.setenv("CALVER_SCM_TIMEZONE", "UTC")
@@ -102,6 +105,7 @@ def test_overlay_env_overrides_values(monkeypatch: pytest.MonkeyPatch) -> None:
     assert cfg.mode is CalverMode.DAY
     assert cfg.scheme == "YYYY.0M.0D"
     assert cfg.patch is False
+    assert cfg.stable is False
     assert cfg.fallback is FallbackMode.DATE
     assert cfg.tag_prefix == "release-"
     assert cfg.timezone == "UTC"
@@ -125,6 +129,24 @@ def test_overlay_env_accepts_truthy_patch_value(
     assert cfg.patch is True
 
 
+def test_overlay_env_rejects_invalid_stable_value(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Raise a helpful error when CALVER_SCM_STABLE cannot be parsed as bool."""
+    monkeypatch.setenv("CALVER_SCM_STABLE", "maybe")
+    with pytest.raises(ValueError, match="Invalid CALVER_SCM_STABLE value"):
+        CalverConfig.overlay_env(CalverConfig())
+
+
+def test_overlay_env_accepts_truthy_stable_value(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Treat truthy env values as stable output enabled."""
+    monkeypatch.setenv("CALVER_SCM_STABLE", "on")
+    cfg = CalverConfig.overlay_env(CalverConfig(stable=False))
+    assert cfg.stable is True
+
+
 def test_overlay_env_ignores_legacy_scm_calver_variable_names(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -146,6 +168,7 @@ def test_load_calver_config_reads_pyproject_and_env(
             [
                 "[tool.calver-scm]",
                 'mode = "month"',
+                "stable = false",
                 'fallback = "dev"',
                 'tag_prefix = "v"',
             ]
@@ -153,9 +176,11 @@ def test_load_calver_config_reads_pyproject_and_env(
         encoding="utf-8",
     )
     monkeypatch.setenv("CALVER_SCM_MODE", "week")
+    monkeypatch.setenv("CALVER_SCM_STABLE", "yes")
 
     cfg = _load_calver_config(tmp_path)
     assert cfg.mode is CalverMode.WEEK
+    assert cfg.stable is True
     assert cfg.fallback is FallbackMode.DEV
     assert cfg.tag_prefix == "v"
 

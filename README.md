@@ -32,6 +32,7 @@ Versions look like this:
 2026.04.15.0       -> day mode: clean tag on the 15th
 2026.04.15.1.dev2  -> day mode: 2 commits after a tag on the same day
 2026.04.0.dev12    -> no tag yet, 12 commits in
+0.2026.04.0        -> same release line, but marked unstable/pre-1.0
 ```
 
 ---
@@ -123,10 +124,26 @@ checkout includes tags and enough history to resolve the latest version tag.
 
 ## How versions are generated
 
-Every version follows the pattern:
+The generated version shape is config-driven. In general, it looks like:
 
 ```
-YYYY.MM[.DD].PATCH[.devN][+dirty]
+[0.]<DATE_BASE>.PATCH[.devN][+local]
+```
+
+- `<DATE_BASE>` comes from `mode`/`scheme` (for example `YYYY`, `YYYY.MM`,
+  `YYYY.WW`, or `YYYY.MM.DD`).
+- `0.` is included only when `stable = false`.
+- `.devN` appears for non-tag builds (and in no-tag fallback when
+  `fallback = "dev"`).
+- `+local` (including `+dirty`) depends on your setuptools-scm `local_scheme`.
+
+If `stable = false`, `calver-scm` prefixes the generated public version with
+`0.` to indicate an explicitly unstable release line:
+
+```
+2026.04.0      -> stable output (default)
+0.2026.04.0    -> unstable output
+0.2026.04.1.dev3
 ```
 
 | Situation                               | Example           |
@@ -181,10 +198,10 @@ v2026.04.0.post3  -> 2026.04.0.post3
 
 ### Dev suffixes (`dev`)
 
-| Tag suffix      | Canonical output |
-|-----------------|------------------|
-| `dev` (bare)    | `dev0`           |
-| `dev-N` / `devN` | `devN`          |
+| Tag suffix       | Canonical output |
+|------------------|------------------|
+| `dev` (bare)     | `dev0`           |
+| `dev-N` / `devN` | `devN`           |
 
 ```
 v2026.04.0.dev    -> 2026.04.0.dev0
@@ -225,6 +242,7 @@ Add a `[tool.calver-scm]` section to `pyproject.toml` to customise behaviour. Al
 mode       = "month"   # "year" | "month" | "week" | "day"
 scheme     = "YYYY.0M" # optional token scheme; defaults from mode
 patch      = true      # auto-increment patch within a period
+stable     = true      # emit normal tags, or prefix versions with 0. when false
 fallback   = "dev"     # "dev" | "date" (when no tag exists)
 tag_prefix = "v"       # prefix stripped when reading tags
 timezone   = "UTC"     # "UTC" (default), "local", or IANA tz name
@@ -309,6 +327,38 @@ patch = false
 # tag v2026.04.2, then 3 commits later -> 2026.04.0.dev3
 ```
 
+### `stable`
+
+Controls whether generated public versions are emitted as stable releases or
+explicitly marked as unstable with a leading `0.` prefix.
+
+```toml
+# stable = true (default): emit standard CalVer versions
+[tool.calver-scm]
+stable = true
+# tag v2026.04.2, then 3 commits later -> 2026.04.3.dev3
+
+# stable = false: prefix generated output with 0.
+[tool.calver-scm]
+stable = false
+# tag v2026.04.2, then 3 commits later -> 0.2026.04.3.dev3
+```
+
+While `stable = false`, both `v0.2026.04.3` and legacy unprefixed tags like
+`v2026.04.3` are accepted as parseable historical bases to ease migration.
+When you switch to `stable = true`, tags that still carry the unstable `0.`
+prefix are treated as incompatible and the version scheme falls back until you
+create the first stable tag.
+
+For a go-live cutover, the recommended flow is:
+
+1. develop and pre-release with `stable = false`
+2. flip to `stable = true` on the release commit
+3. create the first stable tag, for example `v2026.04.0`
+
+That keeps the unstable `0.` tag line distinct from the stable release line and
+avoids silently reinterpreting old unstable tags as stable ones.
+
 ### `fallback`
 
 Controls what happens when no tag exists yet in the repository.
@@ -374,14 +424,15 @@ timezone = "Pacific/Auckland"
 
 Every option can be overridden at build time without touching `pyproject.toml`, which is handy for CI pipelines.
 
-| Variable                | Equivalent option          |
-|-------------------------|----------------------------|
-| `CALVER_SCM_MODE`       | `mode`                     |
-| `CALVER_SCM_SCHEME`     | `scheme`                   |
-| `CALVER_SCM_PATCH`      | `patch` (`true` / `false`) |
-| `CALVER_SCM_FALLBACK`   | `fallback`                 |
-| `CALVER_SCM_TAG_PREFIX` | `tag_prefix`               |
-| `CALVER_SCM_TIMEZONE`   | `timezone`                 |
+| Variable                | Equivalent option           |
+|-------------------------|-----------------------------|
+| `CALVER_SCM_MODE`       | `mode`                      |
+| `CALVER_SCM_SCHEME`     | `scheme`                    |
+| `CALVER_SCM_PATCH`      | `patch` (`true` / `false`)  |
+| `CALVER_SCM_STABLE`     | `stable` (`true` / `false`) |
+| `CALVER_SCM_FALLBACK`   | `fallback`                  |
+| `CALVER_SCM_TAG_PREFIX` | `tag_prefix`                |
+| `CALVER_SCM_TIMEZONE`   | `timezone`                  |
 
 Environment variables take precedence over `pyproject.toml`.
 
@@ -391,6 +442,7 @@ Environment variables take precedence over `pyproject.toml`.
 > - `SCM_CALVER_MODE` -> `CALVER_SCM_MODE`
 > - `SCM_CALVER_SCHEME` -> `CALVER_SCM_SCHEME`
 > - `SCM_CALVER_PATCH` -> `CALVER_SCM_PATCH`
+> - `SCM_CALVER_STABLE` -> `CALVER_SCM_STABLE`
 > - `SCM_CALVER_FALLBACK` -> `CALVER_SCM_FALLBACK`
 > - `SCM_CALVER_TAG_PREFIX` -> `CALVER_SCM_TAG_PREFIX`
 > - `SCM_CALVER_TIMEZONE` -> `CALVER_SCM_TIMEZONE`

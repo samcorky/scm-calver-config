@@ -67,6 +67,13 @@ def _fallback_version(*, base: str, distance: int, fallback: FallbackMode) -> st
     return f"{base}.0.dev{distance}"
 
 
+def _apply_stability_prefix(version: str, cfg: CalverConfig) -> str:
+    """Prefix output with `0.` when project stability is explicitly disabled."""
+    if cfg.stable:
+        return version
+    return f"0.{version}"
+
+
 def _today_in_timezone(timezone: str) -> datetime.date:
     """Return today's date in configured timezone semantics."""
     normalized = timezone.strip().lower()
