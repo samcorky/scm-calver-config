@@ -26,6 +26,8 @@ def _release_components(
 ) -> tuple[tuple[int, ...], int] | None:
     """Extract (date parts, patch) from a parsed CalVer version."""
     release = version.release
+    if not cfg.stable and release and release[0] == 0:
+        release = release[1:]
     date_len = len(cfg.scheme_tokens)
 
     if len(release) == date_len:

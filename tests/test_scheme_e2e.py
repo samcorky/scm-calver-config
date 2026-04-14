@@ -64,6 +64,34 @@ def test_calver_scm_respects_patch_false(
     assert calver_scm(version) == "2026.04.0.dev3"
 
 
+@pytest.mark.parametrize(
+    ("tag", "distance", "dirty", "expected"),
+    [
+        ("v2026.04.2", 0, False, "0.2026.04.2"),
+        ("v2026.04.2rc1.post2.dev3+abc", 0, False, "0.2026.04.2rc1.post2.dev3+abc"),
+        ("v2026.04.2", 3, False, "0.2026.04.3.dev3"),
+        ("v2026.04.2", 0, True, "0.2026.04.3.dev0"),
+    ],
+)
+def test_calver_scm_prepends_zero_prefix_when_stable_false(
+    write_pyproject: Callable[[str], Path],
+    make_scm_version: Callable[..., Any],
+    monkeypatch: pytest.MonkeyPatch,
+    tag: str,
+    distance: int,
+    dirty: bool,
+    expected: str,
+) -> None:
+    """Prefix all generated outputs with `0.` when project stability is disabled."""
+    root = write_pyproject("\n".join(['mode = "month"', "stable = false"]))
+    monkeypatch.setattr(
+        "calver_scm.scheme._today_in_timezone",
+        lambda _tz: dt.date(2026, 4, 15),
+    )
+    version = make_scm_version(root=root, tag=tag, distance=distance, dirty=dirty)
+    assert calver_scm(version) == expected
+
+
 def test_calver_scm_fallback_when_no_tag_in_dev_mode(
     write_pyproject: Callable[[str], Path],
     make_scm_version: Callable[..., Any],
@@ -92,6 +120,32 @@ def test_calver_scm_fallback_when_no_tag_in_date_mode(
     )
     version = make_scm_version(root=root, tag=None, distance=12)
     assert calver_scm(version) == "2026.04.0"
+
+
+@pytest.mark.parametrize(
+    ("fallback", "expected"),
+    [
+        ("dev", "0.2026.04.0.dev12"),
+        ("date", "0.2026.04.0"),
+    ],
+)
+def test_calver_scm_prepends_zero_prefix_for_unstable_fallback_modes(
+    write_pyproject: Callable[[str], Path],
+    make_scm_version: Callable[..., Any],
+    monkeypatch: pytest.MonkeyPatch,
+    fallback: str,
+    expected: str,
+) -> None:
+    """Apply unstable prefix to fallback outputs regardless of fallback mode."""
+    root = write_pyproject(
+        "\n".join(['mode = "month"', "stable = false", f'fallback = "{fallback}"'])
+    )
+    monkeypatch.setattr(
+        "calver_scm.scheme._today_in_timezone",
+        lambda _tz: dt.date(2026, 4, 15),
+    )
+    version = make_scm_version(root=root, tag=None, distance=12)
+    assert calver_scm(version) == expected
 
 
 def test_calver_scm_fallback_for_unparsable_or_incompatible_tag(

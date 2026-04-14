@@ -54,3 +54,20 @@ def test_release_components_returns_none_when_release_shape_is_incompatible() ->
     parsed = _parse_tag("v2026.04", cfg)
     assert parsed is not None
     assert _release_components(parsed, cfg) is None
+
+
+def test_release_components_accepts_unstable_prefixed_tag_when_stable_false() -> None:
+    """Strip leading 0 release segment before extracting date and patch."""
+    cfg = CalverConfig(mode=CalverMode.MONTH, stable=False)
+    parsed = _parse_tag("v0.2026.04.3", cfg)
+    assert parsed is not None
+    assert _release_components(parsed, cfg) == ((2026, 4), 3)
+
+
+def test_release_components_accepts_unstable_mode_with_legacy_unprefixed_tag() -> None:
+    """Keep migration smooth by still parsing legacy tags without the 0 prefix."""
+    cfg = CalverConfig(mode=CalverMode.MONTH, stable=False)
+    parsed = _parse_tag("v2026.04.3", cfg)
+    assert parsed is not None
+    assert _release_components(parsed, cfg) == ((2026, 4), 3)
+
