@@ -124,11 +124,18 @@ checkout includes tags and enough history to resolve the latest version tag.
 
 ## How versions are generated
 
-Every version follows the pattern:
+The generated version shape is config-driven. In general, it looks like:
 
 ```
-YYYY.MM[.DD].PATCH[.devN][+dirty]
+[0.]<DATE_BASE>.PATCH[.devN][+local]
 ```
+
+- `<DATE_BASE>` comes from `mode`/`scheme` (for example `YYYY`, `YYYY.MM`,
+  `YYYY.WW`, or `YYYY.MM.DD`).
+- `0.` is included only when `stable = false`.
+- `.devN` appears for non-tag builds (and in no-tag fallback when
+  `fallback = "dev"`).
+- `+local` (including `+dirty`) depends on your setuptools-scm `local_scheme`.
 
 If `stable = false`, `calver-scm` prefixes the generated public version with
 `0.` to indicate an explicitly unstable release line:
