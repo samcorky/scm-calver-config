@@ -5,6 +5,7 @@ import sys
 from dataclasses import dataclass
 from enum import Enum
 from functools import lru_cache
+from types import MappingProxyType
 from typing import TYPE_CHECKING, Any
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
@@ -63,6 +64,23 @@ class FallbackMode(_StrEnum):
             raise ValueError(f"Invalid fallback: {value!r}") from e
 
 
+# CalVer token group constants (global, immutable)
+YEAR_TOKENS = frozenset({"YYYY", "YY", "0Y"})
+MONTH_TOKENS = frozenset({"MM", "0M"})
+WEEK_TOKENS = frozenset({"WW", "0W"})
+DAY_TOKENS = frozenset({"DD", "0D"})
+ALL_TOKENS = YEAR_TOKENS | MONTH_TOKENS | WEEK_TOKENS | DAY_TOKENS
+# Granularity mapping: 0=year, 1=month/week, 2=day
+TOKEN_GRANULARITY = MappingProxyType(
+    {
+        **dict.fromkeys(YEAR_TOKENS, 0),
+        **dict.fromkeys(MONTH_TOKENS, 1),
+        **dict.fromkeys(WEEK_TOKENS, 1),
+        **dict.fromkeys(DAY_TOKENS, 2),
+    }
+)
+
+
 @dataclass(frozen=True, slots=True)
 class CalverConfig:
     """Configuration for the CalVer versioning scheme."""
@@ -74,20 +92,6 @@ class CalverConfig:
     fallback: FallbackMode = FallbackMode.DEV
     tag_prefix: str = "v"
     timezone: str = "UTC"
-
-    _ALLOWED_SCHEME_TOKENS = frozenset(
-        {
-            "YYYY",
-            "YY",
-            "0Y",
-            "MM",
-            "0M",
-            "WW",
-            "0W",
-            "DD",
-            "0D",
-        }
-    )
 
     def __post_init__(self) -> None:
         """Validate field values after dataclass initialization."""
@@ -150,19 +154,53 @@ class CalverConfig:
 
     @classmethod
     def _validate_scheme_tokens(cls, tokens: tuple[str, ...]) -> None:
-        """Validate that a token sequence is supported and internally consistent."""
-        if any(token not in cls._ALLOWED_SCHEME_TOKENS for token in tokens):
-            raise ValueError("Invalid scheme")
+        """Validates scheme tokens.
 
-        has_week = any(token in ("WW", "0W") for token in tokens)
-        has_month_or_day = any(token in ("MM", "0M", "DD", "0D") for token in tokens)
-        if has_week and has_month_or_day:
+        Checks that a token sequence is supported, internally consistent,
+        and ordered by descending calendar granularity.
+
+        Year tokens must come first, followed by month/week, then day tokens.
+        Only one token per granularity is allowed.
+        """
+        # Validate all tokens are known
+        unknown = set(tokens) - ALL_TOKENS
+        if unknown:
+            raise ValueError(f"Invalid scheme: unknown token(s) {unknown}")
+
+        # Use set logic for week/month/day mixing
+        token_set = set(tokens)
+        has_week = bool(token_set & WEEK_TOKENS)
+        has_month = bool(token_set & MONTH_TOKENS)
+        has_day = bool(token_set & DAY_TOKENS)
+        if has_week and (has_month or has_day):
             raise ValueError(
                 "Invalid scheme: week tokens cannot be combined with month/day tokens"
             )
 
-        if not any(token in ("YYYY", "YY", "0Y") for token in tokens):
+        # Validate year presence
+        if not (token_set & YEAR_TOKENS):
             raise ValueError("Invalid scheme: scheme must include a year token")
+
+        # Validate order and uniqueness per granularity
+        last_level = -1
+        seen_levels = set()
+        for token in tokens:
+            level = TOKEN_GRANULARITY[token]
+            if level < last_level:
+                raise ValueError(
+                    f"Invalid scheme: token '{token}' appears before a "
+                    "higher-granularity token. "
+                    "Tokens must be ordered: year → month/week → day."
+                )
+            if level in seen_levels:
+                raise ValueError(
+                    f"Invalid scheme: more than one token for granularity "
+                    f"level {level} ('{token}'). "
+                    "Only one token per granularity (year, month/week, day) "
+                    "is allowed."
+                )
+            seen_levels.add(level)
+            last_level = level
 
     @classmethod
     def overlay_env(cls, base: CalverConfig) -> CalverConfig:

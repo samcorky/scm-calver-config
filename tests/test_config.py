@@ -206,3 +206,68 @@ def test_load_calver_config_raises_for_invalid_config(tmp_path: Path) -> None:
     )
     with pytest.raises(RuntimeError, match="Invalid config"):
         _load_calver_config(tmp_path)
+
+
+@pytest.mark.parametrize(
+    ("scheme", "expected"),
+    [
+        ("DD.YYYY", "Tokens must be ordered: year"),  # day before year
+        (
+            "0M.YYYY.0D",
+            "Tokens must be ordered: year",
+        ),  # month before year, day after year
+        ("YYYY.DD.0M", "Tokens must be ordered: year"),  # day before month
+        ("0D.0M.YYYY", "Tokens must be ordered: year"),  # day before month before year
+        ("0W.YYYY", "Tokens must be ordered: year"),  # week before year
+        (
+            "0D.YYYY.0W",
+            "week tokens cannot be combined with month/day tokens",
+        ),  # week/month-day mix
+    ],
+)
+def test_scheme_token_order_enforced(scheme: str, expected: str) -> None:
+    """
+    Reject schemes with tokens out of descending granularity order or with
+    invalid combinations.
+    """
+    with pytest.raises(ValueError, match=expected):
+        CalverConfig(scheme=scheme)
+
+
+@pytest.mark.parametrize(
+    "scheme",
+    [
+        "YYYY",
+        "YYYY.0M",
+        "YYYY.0M.0D",
+        "YYYY.0W",
+        "YY.MM.DD",
+        "0Y.0W",
+        "0Y.0M.0D",
+    ],
+)
+def test_scheme_token_order_valid(scheme: str) -> None:
+    """
+    Accept schemes with tokens in correct descending granularity order.
+    """
+    cfg = CalverConfig(scheme=scheme)
+    assert cfg.scheme_tokens == tuple(scheme.split("."))
+
+
+@pytest.mark.parametrize(
+    ("scheme", "expected"),
+    [
+        ("YYYY.YY", "Only one token per granularity"),  # duplicate year
+        ("YYYY.0M.MM", "Only one token per granularity"),  # duplicate month
+        ("YYYY.0W.WW", "Only one token per granularity"),  # duplicate week
+        ("YYYY.0M.0D.DD", "Only one token per granularity"),  # duplicate day
+    ],
+)
+def test_scheme_token_duplicate_granularity_rejected(
+    scheme: str, expected: str
+) -> None:
+    """
+    Reject schemes with more than one token per granularity (year, month/week, day).
+    """
+    with pytest.raises(ValueError, match=expected):
+        CalverConfig(scheme=scheme)
